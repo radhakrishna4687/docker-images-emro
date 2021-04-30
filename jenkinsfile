@@ -20,6 +20,15 @@ pipeline {
                 sh "pwd"
             }
         }
+        stage ('Maven Build WAR file') {
+            steps {
+                sh '''
+                    mvn -f /var/lib/jenkins/workspace/CG_EMRO_PIPELINE/pom.xml clean package
+                '''
+                //cp /var/lib/jenkins/workspace/artifacts-upload-s3-pipeline/target/*.war /home/ec2-user/
+                echo "Sucessfully Compile Java code and generated WAR file"
+            }
+        }
         //Create Docker image
         stage ('Build Docker Image') {
             /* The Specific docker file run cmd: docker build -t ${DOCKER_IMAGE} --file /Pathof the Dockerfile avilable/Dockerfile */
@@ -34,13 +43,13 @@ pipeline {
         }
         //Creating a  dockeri image backup and copy the docker image from one server to another server with out pusing Dockerhub repo.
         stage ('Docker image Save') {
-            script {
+            steps {
                 sh '''
                     docker save --output ${DOCKER_IMAGE} | gzip > /var/lib/jenkins/Dockerimages-backup/${DOCKER_IMAGE}.tar.gz
                     du -h ${DOCKER_IMAGE}.tar.gz
                 '''    
-            }
             // Once save the Docker image , transfer /tar file to target severs using any of the taransfer protocal like ftp or scp 
+            }
         }
         //Another approche is Save the Docker image in Jenkins servers and upload to AWS S3 bucket, S3 bucket make avilable to download the Docker image file and into local severs. push to Dockeer hub  Private repo. 
         //aws s3api create-bucket --bucket my-bucket --region us-east-1 --> AWS Cli S3 bucket creation command.
@@ -54,4 +63,5 @@ pipeline {
                     echo "Sucessfully upload the Docker images Backup files  to S3 buckets"
             }
         }
-    }
+    }   
+}
