@@ -58,7 +58,7 @@ pipeline {
                     sh '''
                         aws s3api list-buckets
                         aws s3 mb s3://dockerimages-backup
-                        aws s3 cp  /var/lib/jenkins/Dockerimages-backup/.tar s3://dockerimages-backup
+                        aws s3 cp  /var/lib/jenkins/Dockerimages-backup/*.tar s3://dockerimages-backup
                     '''
                     echo "Sucessfully upload the Docker images Backup files  to S3 buckets"
             }
