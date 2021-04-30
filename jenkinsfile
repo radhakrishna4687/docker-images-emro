@@ -1,0 +1,57 @@
+currentBuild.displayName = "EMRO-BUILD # "+currentBuild.number
+
+pipeline {
+    agent any 
+    environment {
+        NAME = "emro-test"
+        DOCKER_IMAGE  = "${NAME}:${env.BUILD_ID}"
+        //VERSION = "${env.BUILD_ID}-${env.GIT_COMMIT}"
+       // DOCKER_IMAGE  = "${NAME}:${VERSION}"
+       // CONTINER_NAME = "${NAME}:${env.BUILD_ID}"
+        //Docker_tag = getDockerTag()
+    }
+    stages {
+        stage ('Clone Repository') {
+            steps {
+                echo "Checkout Git Repo"
+            // git credentialsId: 'github', url: 'https://github.com/radhakrishna4687/:${GITHUB_BRANCH}'
+                git 'https://github.com/radhakrishna4687/k8s-docker-sample-code.git'
+                echo "Completed the Checkout the Git"
+                sh "pwd"
+            }
+        }
+        //Create Docker image
+        stage ('Build Docker Image') {
+            /* The Specific docker file run cmd: docker build -t ${DOCKER_IMAGE} --file /Pathof the Dockerfile avilable/Dockerfile */
+            steps {
+                sh '''
+                    docker build . -t ${DOCKER_IMAGE} 
+                    docker images
+                ''' 
+                echo "Sucessfully Build the Docker Image"
+                //sh "docker build .  -t radhakrishna4687/test-image-1:${DOCKER_TAG} "
+            }
+        }
+        //Creating a  dockeri image backup and copy the docker image from one server to another server with out pusing Dockerhub repo.
+        stage ('Docker image Save') {
+            script {
+                sh '''
+                    docker save --output ${DOCKER_IMAGE} | gzip > /var/lib/jenkins/Dockerimages-backup/${DOCKER_IMAGE}.tar.gz
+                    du -h ${DOCKER_IMAGE}.tar.gz
+                '''    
+            }
+            // Once save the Docker image , transfer /tar file to target severs using any of the taransfer protocal like ftp or scp 
+        }
+        //Another approche is Save the Docker image in Jenkins servers and upload to AWS S3 bucket, S3 bucket make avilable to download the Docker image file and into local severs. push to Dockeer hub  Private repo. 
+        //aws s3api create-bucket --bucket my-bucket --region us-east-1 --> AWS Cli S3 bucket creation command.
+        stage ("Upload Docker images to AWS s3 Bucket") {
+            steps {
+                    sh '''
+                        aws s3api list-buckets
+                        aws s3 mb s3://dockerimages-backup
+                        aws s3 cp  /var/lib/jenkins/Dockerimages-backup/.tar.gz s3://dockerimages-backup
+                    '''
+                    echo "Sucessfully upload the Docker images Backup files  to S3 buckets"
+            }
+        }
+    }
