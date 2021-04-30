@@ -45,8 +45,8 @@ pipeline {
         stage ('Docker image Save') {
             steps {
                 sh '''
-                    docker save --output ${DOCKER_IMAGE} | gzip > /var/lib/jenkins/Dockerimages-backup/${DOCKER_IMAGE}.tar.gz
-                    du -h ${DOCKER_IMAGE}.tar.gz
+                    docker save -o ${DOCKER_IMAGE} > /var/lib/jenkins/Dockerimages-backup/${DOCKER_IMAGE}.tar
+                    du -h ${DOCKER_IMAGE}.tar
                 '''    
             // Once save the Docker image , transfer /tar file to target severs using any of the taransfer protocal like ftp or scp 
             }
