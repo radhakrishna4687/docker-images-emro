@@ -45,8 +45,7 @@ pipeline {
         stage ('Docker image Save') {
             steps {
                 sh '''
-                    docker save -o ${DOCKER_IMAGE}  > /var/lib/jenkins/Dockerimages-backup/emro_${env.BUILD_ID}.tar
-                    du -h ${DOCKER_IMAGE}.tar
+                    docker save -o  /var/lib/jenkins/Dockerimages-backup/emroimage.tar ${DOCKER_IMAGE} 
                 '''    
             // Once save the Docker image , transfer /tar file to target severs using any of the taransfer protocal like ftp or scp 
             }
