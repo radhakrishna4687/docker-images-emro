@@ -1,6 +1,7 @@
 FROM tomcat:8.5.65 
 
-ADD ./target/*.war /usr/local/tomcat/webapps/
+WORKDIR /var/lib/jenkins/workspace/CG_EMRO_PIPELINE/target
+ADD /target/*.war /usr/local/tomcat/webapps/
 
 EXPOSE 8080
 
